@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Neocooler - Gerenciamento de Produção Externa</title><link rel="icon" type="image/jpeg" href="/static/neocooler-logo.jpg"><link rel="stylesheet" href="/static/style.css"></head><body>
+<header><a class="brand" href="/" aria-label="Página inicial"><img src="/static/neocooler-logo.jpg" alt="Logo Neocooler" width="64" height="64"><span>Neocooler - Gerenciamento de Produção Externa</span></a><nav aria-label="Navegação principal"><a class="nav-link" href="/">Novo lote</a><a class="button secondary" href="/lotes" aria-current="page">Lotes salvos →</a></nav></header>
+<main class="history-page"><div class="intro"><p class="eyebrow">PRODUÇÃO EXTERNA</p><h1>Lotes salvos.</h1><p>Consulte os envios à confecção e abra os relatórios de cada lote.</p></div>
+<section class="panel history-panel"><div class="section-head"><h2>Histórico de produção</h2><button id="refresh-history" class="secondary">Atualizar</button></div><p id="history-status" role="status" aria-live="polite"></p><div id="history-list"></div></section>
+<section class="panel detail-panel" id="detail-panel" hidden><div id="batch-detail"></div></section>
+<footer>Neocooler · Histórico salvo neste computador. Faça backup da pasta data para preservar seus lotes.</footer></main>
+<script src="/static/shared.js"></script><script src="/static/lotes.js"></script></body></html>

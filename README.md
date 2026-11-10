@@ -1,4 +1,4 @@
-# Fio a fio — Resumo de camisetas
+# Neocooler - Gerenciamento de Produção Externa
 
 Aplicativo web em português para extrair pedidos NEOCOOLER em PDF, conferir itens e consolidar quantidades por cor e tamanho (P, M, G, GG, G1, G2, G3). Permite exportar CSV e evita repetir o mesmo arquivo ou número de venda na sessão.
 
@@ -28,7 +28,7 @@ O teste de integração usa os dois PDFs originais em `/workspace/attachments` q
 - Leitura baseada no modelo NEOCOOLER dos PDFs fornecidos; outros layouts precisam de validação e adaptação.
 - PDFs de imagem precisam de OCR, ainda não implementado.
 - Até 30 arquivos por envio, 10 MB e 100 páginas por arquivo.
-- Lotes salvos são persistidos em SQLite local; pedidos ainda não salvos são perdidos ao recarregar. Não há contas nem sincronização entre computadores.
+- Lotes salvos são persistidos em SQLite local; pedidos em conferência são mantidos temporariamente na mesma aba do navegador. Não há contas nem sincronização entre computadores.
 - PDFs são processados em memória; o histórico guarda apenas os dados conferidos dos pedidos, não os PDFs originais.
 - Versão para desenvolvimento, sem autenticação: use em ambiente confiável. Não expor diretamente na internet como serviço público.
 
@@ -39,7 +39,7 @@ O teste de integração usa os dois PDFs originais em `/workspace/attachments` q
 2. Dê um nome ao lote e clique em **Salvar lote no histórico**. Dados incompletos impedem salvar.
 3. O lote recebe data e hora de criação automaticamente. A tela mostra horário de Brasília.
 4. Após salvar, a conferência é limpa para o próximo lote. O lote salvo é uma cópia definitiva: alterações em novos pedidos não modificam o histórico.
-5. Em **Histórico de produção**, clique em **Abrir lote** para ver os pedidos separados, com o resumo geral ao final. Use **Imprimir / Salvar PDF** e escolha o destino no navegador.
+5. No botão **Lotes salvos** do cabeçalho, abra a página de histórico e clique em **Abrir lote** para ver os pedidos separados, com o resumo geral ao final. Use **Imprimir / Salvar PDF** e escolha o destino no navegador.
 
 O histórico fica em `data/historico.sqlite3`, dentro da pasta do aplicativo no computador que executa o servidor. Não é enviado ao GitHub. Faça backup da pasta `data` com o aplicativo fechado. Ao atualizar o código, mantenha essa pasta no mesmo local: baixar e abrir uma pasta nova não transfere seu histórico automaticamente. É possível escolher outro caminho com a variável `CAMISETAS_DB`.
 
@@ -53,3 +53,12 @@ Feche o servidor com Ctrl+C. Baixe a versão atual no GitHub e copie `app.py`, `
 ```
 
 No navegador, abra o endereço local e pressione Ctrl+F5 para carregar a interface atualizada.
+
+
+## Navegação e identidade visual
+
+A página inicial (`/`) contém apenas o preparo e a conferência do novo lote. O botão **Lotes salvos** abre `/lotes`, com o histórico e os relatórios. Ao salvar um lote, o aplicativo abre seu relatório nessa página. O botão **Novo lote** retorna ao preparo. A conferência em andamento é mantida na mesma aba durante a navegação, mas só **Salvar lote no histórico** grava uma cópia permanente no banco de dados.
+
+A interface usa preto, branco e tons de cinza. O logo Neocooler e o favicon usam uma cópia do logo presente nos PDFs de exemplo, em `static/neocooler-logo.jpg`. Não requer serviços de imagem ou fontes externos.
+
+Nesta atualização, substitua `app.py` e toda a pasta `static` (incluindo os novos arquivos `shared.js`, `lotes.js`, `lotes.html` e o logo). Preserve a pasta `data`. Reinicie o servidor e atualize o navegador com Ctrl+F5.

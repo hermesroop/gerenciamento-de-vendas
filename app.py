@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from pypdf import PdfReader
 
 ROOT = Path(__file__).parent
-app = FastAPI(title='Resumo de camisetas')
+app = FastAPI(title='Neocooler - Gerenciamento de Produção Externa')
 app.mount('/static', StaticFiles(directory=ROOT / 'static'), name='static')
 SIZES = ['P', 'M', 'G', 'GG', 'G1', 'G2', 'G3']
 COLORS = {'AZUL MARINHO': 'Azul-marinho', 'AZUL ROYAL': 'Azul royal', 'VERDE': 'Verde', 'BRANCA': 'Branca', 'BRANCO': 'Branca', 'PRETA': 'Preta', 'PRETO': 'Preta', 'VERMELHA': 'Vermelha', 'VERMELHO': 'Vermelha', 'AMARELA': 'Amarela', 'AMARELO': 'Amarela', 'CINZA': 'Cinza', 'ROSA': 'Rosa', 'LARANJA': 'Laranja', 'AZUL': 'Azul', 'BEGE': 'Bege', 'ROXA': 'Roxa', 'ROXO': 'Roxa'}
@@ -56,6 +56,10 @@ def parse_pdf(data: bytes, filename: str):
 @app.get('/')
 def index():
     return FileResponse(ROOT / 'static/index.html')
+
+@app.get('/lotes')
+def history_page():
+    return FileResponse(ROOT / 'static/lotes.html')
 
 @app.post('/api/parse')
 async def parse(files: list[UploadFile] = File(...)):
