@@ -219,3 +219,24 @@ class ImageTextRequest(BaseModel):
 @app.post('/api/parse-image-text')
 def parse_image_text(request: ImageTextRequest):
     return parse_order_text(request.text, request.filename)
+
+
+class AppendOrdersRequest(BaseModel):
+    orders: list[Order] = Field(min_length=1, max_length=500)
+
+
+@app.post('/api/batches/{batch_id}/orders')
+def append_orders(batch_id: str, request: AppendOrdersRequest):
+    with connect_history() as con:
+        con.execute('BEGIN IMMEDIATE')
+        row = con.execute('SELECT * FROM batches WHERE id=?', (batch_id,)).fetchone()
+        if row is None:
+            raise HTTPException(404, 'Lote não encontrado.')
+        existing = batch_record(row)
+        merged = existing['orders'] + [o.model_dump() for o in request.orders]
+        if len(merged) > 500:
+            raise HTTPException(400, 'O lote pode conter até 500 pedidos.')
+        payload = validated_payload(Batch(name=existing['name'], orders=merged))
+        payload['updated_at'] = datetime.now(timezone.utc).isoformat()
+        con.execute('UPDATE batches SET payload=? WHERE id=?', (json.dumps(payload, ensure_ascii=False), batch_id))
+        return dict(id=batch_id, created_at=existing['created_at'], **payload)

@@ -127,3 +127,11 @@ Após a leitura, confira todos os campos e marque **Conferi todos os dados deste
 Depois pressione Ctrl+F5 no navegador. Se o Tesseract não estiver instalado, o app informa o problema ao importar imagens; PDFs com texto continuam funcionando. Em Linux, instale os pacotes `tesseract-ocr` e `tesseract-ocr-eng` pelo gerenciador do sistema.
 
 Limites: 30 arquivos por envio, 10 MB por arquivo e 16 milhões de pixels por imagem. Apenas prints com texto legível; não há suporte a escrita à mão ou OCR de PDFs digitalizados. O texto OCR é temporário na aba; o histórico guarda os pedidos conferidos, não as imagens originais.
+
+## Adicionar pedidos a lotes existentes
+
+Na tela inicial, importe PDFs/prints e confira os pedidos normalmente (incluindo o número do pedido e a confirmação de OCR). Em **Adicionar a um lote existente**, escolha o destino e clique em **Adicionar pedidos ao lote selecionado**. Todos os pedidos em conferência serão acrescentados, sem substituir os que já estavam no lote. Não é necessário preencher um nome de lote novo. Números de pedido repetidos no mesmo lote impedem toda a inclusão, sem salvar parcialmente ou limpar os pedidos da tela. Após sucesso, a conferência é limpa e o relatório do lote atualizado é aberto.
+
+Na janela **Editar lote**, use **Adicionar pedido** para preencher manualmente o número, cliente e itens. **Adicionar camiseta** e **Remover item** permitem ajustar as linhas. **Excluir pedido** retira o pedido da edição após confirmação. O resumo da edição acompanha as quantidades. Essas alterações só entram no histórico ao clicar em **Salvar alterações**; cancelar descarta todas. É necessário manter pelo menos um pedido e uma camiseta por pedido. Para remover um lote inteiro, use **Excluir lote**.
+
+A inclusão preserva nome e data original do lote e atualiza a data de última edição. O filtro de datas continua considerando a criação do lote, não a data em que os novos pedidos foram acrescentados. O limite é de 500 pedidos por lote.

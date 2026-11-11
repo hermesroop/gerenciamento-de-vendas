@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
-from app import Batch, save_batch, list_batches, get_batch, parse_pdf, update_batch, delete_batch, summarize_batches, BatchSummaryRequest, connect_history
+from app import Batch, save_batch, list_batches, get_batch, parse_pdf, update_batch, delete_batch, summarize_batches, BatchSummaryRequest, connect_history, append_orders, AppendOrdersRequest
 from fastapi import HTTPException
 from pydantic import ValidationError
 
@@ -94,3 +94,15 @@ class HistoryTests(unittest.TestCase):
         delete_batch(a['id'])
         with self.assertRaises(HTTPException) as err: summarize_batches(BatchSummaryRequest(batch_ids=[a['id'],b['id']]))
         self.assertEqual(err.exception.status_code,409)
+
+
+    def test_append_orders_preserves_batch_and_rejects_duplicate(self):
+        a=save_batch(Batch(**self.sample()))
+        order=self.sample()['orders'][0];order['order']='NEW-1'
+        appended=append_orders(a['id'],AppendOrdersRequest(orders=[order]))
+        self.assertEqual(len(appended['orders']),2)
+        self.assertEqual(appended['created_at'],a['created_at'])
+        self.assertEqual(appended['name'],a['name'])
+        with self.assertRaises(HTTPException):append_orders(a['id'],AppendOrdersRequest(orders=[order]))
+        self.assertEqual(len(get_batch(a['id'])['orders']),2)
+        with self.assertRaises(HTTPException):append_orders('missing',AppendOrdersRequest(orders=[order]))
