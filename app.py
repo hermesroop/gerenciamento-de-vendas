@@ -172,3 +172,37 @@ def delete_batch(batch_id: str):
         result = con.execute('DELETE FROM batches WHERE id=?', (batch_id,))
         if not result.rowcount:
             raise HTTPException(404, 'Lote não encontrado.')
+
+
+class BatchSummaryRequest(BaseModel):
+    batch_ids: list[str] = Field(min_length=1, max_length=1000)
+    start_date: str | None = None
+    end_date: str | None = None
+
+
+@app.post('/api/batch-summary')
+def summarize_batches(request: BatchSummaryRequest):
+    from datetime import date, timedelta
+    try:
+        start = date.fromisoformat(request.start_date) if request.start_date else None
+        end = date.fromisoformat(request.end_date) if request.end_date else None
+    except ValueError:
+        raise HTTPException(400, 'Informe datas válidas.')
+    if start and end and start > end:
+        raise HTTPException(400, 'A data inicial deve ser anterior ou igual à data final.')
+    ids = list(dict.fromkeys(request.batch_ids))
+    # One read obtains a consistent snapshot of the selected batches.
+    with connect_history() as con:
+        rows = con.execute('SELECT * FROM batches ORDER BY created_at DESC').fetchall()
+    found = {r['id']: batch_record(r) for r in rows if r['id'] in ids}
+    if len(found) != len(ids):
+        raise HTTPException(409, 'Um lote selecionado foi excluído. Atualize a lista e selecione novamente.')
+    batches = list(found.values())
+    for b in batches:
+        day = datetime.fromisoformat(b['created_at']).astimezone(timezone(timedelta(hours=-3))).date()
+        if (start and day < start) or (end and day > end):
+            raise HTTPException(400, 'Há lotes selecionados fora do período informado. Refine a seleção.')
+    return dict(generated_at=datetime.now(timezone.utc).isoformat(), start_date=request.start_date,
+                end_date=request.end_date, batches=batches, batch_count=len(batches),
+                order_count=sum(len(b['orders']) for b in batches),
+                quantity=sum(i['quantity'] for b in batches for o in b['orders'] for i in o['items']))

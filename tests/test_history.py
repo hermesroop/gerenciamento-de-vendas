@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
-from app import Batch, save_batch, list_batches, get_batch, parse_pdf, update_batch, delete_batch
+from app import Batch, save_batch, list_batches, get_batch, parse_pdf, update_batch, delete_batch, summarize_batches, BatchSummaryRequest, connect_history
 from fastapi import HTTPException
 from pydantic import ValidationError
 
@@ -71,3 +71,26 @@ class HistoryTests(unittest.TestCase):
         with self.assertRaises(HTTPException): get_batch(original['id'])
         with self.assertRaises(HTTPException): delete_batch(original['id'])
         with self.assertRaises(HTTPException): update_batch(original['id'],Batch(**data))
+
+
+    def test_summary_selection_dates_and_timezone(self):
+        a=save_batch(Batch(**self.sample()))
+        other=self.sample();other['name']='Outro lote';other['orders'][0]['items'][0]['quantity']=7
+        b=save_batch(Batch(**other))
+        c=save_batch(Batch(**self.sample()))
+        with connect_history() as con:
+            con.execute('UPDATE batches SET created_at=? WHERE id=?',('2026-11-11T02:59:00+00:00',a['id']))
+            con.execute('UPDATE batches SET created_at=? WHERE id=?',('2026-11-11T03:00:00+00:00',b['id']))
+        report=summarize_batches(BatchSummaryRequest(batch_ids=[a['id'],b['id'],a['id']]))
+        self.assertEqual(report['batch_count'],2)
+        self.assertEqual(report['quantity'],16)
+        self.assertEqual(report['order_count'],2)
+        self.assertEqual({b['id'] for b in report['batches']},{a['id'],b['id']})
+        report=summarize_batches(BatchSummaryRequest(batch_ids=[a['id']],start_date='2026-11-10',end_date='2026-11-10'))
+        self.assertEqual(report['quantity'],5)
+        with self.assertRaises(HTTPException): summarize_batches(BatchSummaryRequest(batch_ids=[b['id']],end_date='2026-11-10'))
+        with self.assertRaises(HTTPException): summarize_batches(BatchSummaryRequest(batch_ids=[a['id']],start_date='2026-11-11',end_date='2026-11-10'))
+        with self.assertRaises(HTTPException): summarize_batches(BatchSummaryRequest(batch_ids=[a['id']],start_date='invalid'))
+        delete_batch(a['id'])
+        with self.assertRaises(HTTPException) as err: summarize_batches(BatchSummaryRequest(batch_ids=[a['id'],b['id']]))
+        self.assertEqual(err.exception.status_code,409)

@@ -72,3 +72,16 @@ Em **Lotes salvos**, clique em **Abrir lote**. O relatório abre em uma janela s
 - **Excluir lote**: pede confirmação antes de excluir definitivamente o lote. A lista é atualizada após a operação. Faça backup da pasta `data` se precisar preservar uma cópia antes de excluir.
 
 Para instalar esta atualização no Windows, encerre o servidor, substitua `app.py` e toda a pasta `static`, preserve `data`, reinicie e pressione Ctrl+F5 no navegador. Não há novas dependências.
+
+## Resumo de vários lotes
+
+Na página **Lotes salvos**:
+
+1. Informe a data inicial e/ou final e clique em **Buscar por período**. A pesquisa usa a data de criação do lote, incluindo os dois dias completos no horário de Brasília. Deixe as datas vazias para consultar todo o histórico.
+2. Marque os lotes desejados ou clique em **Selecionar todos os resultados**. O contador informa lotes, pedidos e camisetas selecionados. **Limpar seleção** desmarca todos. Ao mudar o período, lotes que ficam fora do filtro são desmarcados automaticamente.
+3. Clique em **Gerar resumo dos selecionados**. Uma janela mostra a data de geração, o período aplicado, os lotes incluídos, seus pedidos com clientes e itens, um resumo por lote e o resumo geral por cor/tamanho.
+4. Use **Imprimir / Salvar PDF** para guardar ou enviar o relatório. A geração não altera nem cria lotes no histórico. O relatório usa os dados atuais; para preservar o registro de um envio antes de edições futuras, guarde o PDF gerado.
+
+Pedidos presentes em vários lotes são somados em cada ocorrência, pois podem representar envios diferentes. O relatório avisa sobre números de pedido repetidos para permitir conferência. Cada lote selecionado entra apenas uma vez. Um lote excluído durante a seleção causa aviso para atualizar a lista, sem gerar um relatório incompleto.
+
+A data filtrada é a criação do lote, não a data de venda do PDF nem a última edição. Não há status de envio ou data de envio separada nesta versão. A seleção e o filtro desta consulta não são salvos ao sair da página.
