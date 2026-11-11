@@ -110,8 +110,7 @@ def batch_record(row):
     return dict(id=row['id'], created_at=row['created_at'], **json.loads(row['payload']))
 
 
-@app.post('/api/batches', status_code=201)
-def save_batch(batch: Batch):
+def validated_payload(batch: Batch):
     payload = batch.model_dump()
     payload['name'] = payload['name'].strip()
     numbers = set()
@@ -127,6 +126,12 @@ def save_batch(batch: Batch):
                 raise HTTPException(400, 'Preencha a cor de cada camiseta.')
     if not payload['name']:
         raise HTTPException(400, 'Informe um nome para o lote.')
+    return payload
+
+
+@app.post('/api/batches', status_code=201)
+def save_batch(batch: Batch):
+    payload = validated_payload(batch)
     record = dict(id=uuid4().hex, created_at=datetime.now(timezone.utc).isoformat(), **payload)
     with connect_history() as con:
         con.execute('INSERT INTO batches VALUES (?, ?, ?)', (record['id'], record['created_at'], json.dumps(payload, ensure_ascii=False)))
@@ -147,3 +152,23 @@ def get_batch(batch_id: str):
     if row is None:
         raise HTTPException(404, 'Lote não encontrado.')
     return batch_record(row)
+
+
+@app.put('/api/batches/{batch_id}')
+def update_batch(batch_id: str, batch: Batch):
+    payload = validated_payload(batch)
+    payload['updated_at'] = datetime.now(timezone.utc).isoformat()
+    with connect_history() as con:
+        result = con.execute('UPDATE batches SET payload=? WHERE id=?', (json.dumps(payload, ensure_ascii=False), batch_id))
+        if not result.rowcount:
+            raise HTTPException(404, 'Lote não encontrado.')
+        row = con.execute('SELECT * FROM batches WHERE id=?', (batch_id,)).fetchone()
+    return batch_record(row)
+
+
+@app.delete('/api/batches/{batch_id}', status_code=204)
+def delete_batch(batch_id: str):
+    with connect_history() as con:
+        result = con.execute('DELETE FROM batches WHERE id=?', (batch_id,))
+        if not result.rowcount:
+            raise HTTPException(404, 'Lote não encontrado.')

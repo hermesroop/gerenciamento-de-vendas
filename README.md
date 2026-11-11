@@ -38,7 +38,7 @@ O teste de integração usa os dois PDFs originais em `/workspace/attachments` q
 1. Envie os PDFs e confira o número do pedido, o cliente, as cores, tamanhos e quantidades. Os campos podem ser corrigidos antes de salvar.
 2. Dê um nome ao lote e clique em **Salvar lote no histórico**. Dados incompletos impedem salvar.
 3. O lote recebe data e hora de criação automaticamente. A tela mostra horário de Brasília.
-4. Após salvar, a conferência é limpa para o próximo lote. O lote salvo é uma cópia definitiva: alterações em novos pedidos não modificam o histórico.
+4. Após salvar, a conferência é limpa para o próximo lote. O lote salvo é uma cópia independente: alterações em novos pedidos não modificam o histórico. Edições explícitas do lote podem ser feitas na janela de detalhes.
 5. No botão **Lotes salvos** do cabeçalho, abra a página de histórico e clique em **Abrir lote** para ver os pedidos separados, com o resumo geral ao final. Use **Imprimir / Salvar PDF** e escolha o destino no navegador.
 
 O histórico fica em `data/historico.sqlite3`, dentro da pasta do aplicativo no computador que executa o servidor. Não é enviado ao GitHub. Faça backup da pasta `data` com o aplicativo fechado. Ao atualizar o código, mantenha essa pasta no mesmo local: baixar e abrir uma pasta nova não transfere seu histórico automaticamente. É possível escolher outro caminho com a variável `CAMISETAS_DB`.
@@ -62,3 +62,13 @@ A página inicial (`/`) contém apenas o preparo e a conferência do novo lote. 
 A interface usa preto, branco e tons de cinza. O logo Neocooler e o favicon usam uma cópia do logo presente nos PDFs de exemplo, em `static/neocooler-logo.jpg`. Não requer serviços de imagem ou fontes externos.
 
 Nesta atualização, substitua `app.py` e toda a pasta `static` (incluindo os novos arquivos `shared.js`, `lotes.js`, `lotes.html` e o logo). Preserve a pasta `data`. Reinicie o servidor e atualize o navegador com Ctrl+F5.
+
+
+## Editar e excluir lotes
+
+Em **Lotes salvos**, clique em **Abrir lote**. O relatório abre em uma janela sobre a lista, com rolagem própria, impressão e fechamento pelo botão **Fechar** ou pela tecla Esc.
+
+- **Editar lote**: permite alterar nome do lote, número do pedido, cliente, cores, tamanhos e quantidades. **Salvar alterações** grava no banco e recalcula os totais. A data de criação é mantida e a última edição é registrada. **Cancelar edição** descarta as alterações após confirmação.
+- **Excluir lote**: pede confirmação antes de excluir definitivamente o lote. A lista é atualizada após a operação. Faça backup da pasta `data` se precisar preservar uma cópia antes de excluir.
+
+Para instalar esta atualização no Windows, encerre o servidor, substitua `app.py` e toda a pasta `static`, preserve `data`, reinicie e pressione Ctrl+F5 no navegador. Não há novas dependências.

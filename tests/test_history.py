@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
-from app import Batch, save_batch, list_batches, get_batch, parse_pdf
+from app import Batch, save_batch, list_batches, get_batch, parse_pdf, update_batch, delete_batch
 from fastapi import HTTPException
 from pydantic import ValidationError
 
@@ -51,3 +51,23 @@ class HistoryTests(unittest.TestCase):
             p=next(root.rglob('*'+number+'*'),None)
             if p is None: self.skipTest('Anexos não disponíveis')
             self.assertEqual(parse_pdf(p.read_bytes(),p.name)['customer'],name)
+
+
+    def test_edit_and_delete_persist(self):
+        original=save_batch(Batch(**self.sample()))
+        data=self.sample();data['name']='Lote corrigido'
+        data['orders'][0]['customer']='Cliente corrigido'
+        data['orders'][0]['items'][0]['quantity']=8
+        updated=update_batch(original['id'],Batch(**data))
+        self.assertEqual(updated['created_at'],original['created_at'])
+        self.assertIn('updated_at',updated)
+        self.assertEqual(get_batch(original['id'])['orders'][0]['customer'],'Cliente corrigido')
+        self.assertEqual(list_batches()[0]['quantity'],12)
+        invalid=self.sample();invalid['name']=' '
+        with self.assertRaises(HTTPException): update_batch(original['id'],Batch(**invalid))
+        self.assertEqual(get_batch(original['id'])['name'],'Lote corrigido')
+        delete_batch(original['id'])
+        self.assertEqual(list_batches(),[])
+        with self.assertRaises(HTTPException): get_batch(original['id'])
+        with self.assertRaises(HTTPException): delete_batch(original['id'])
+        with self.assertRaises(HTTPException): update_batch(original['id'],Batch(**data))
