@@ -26,8 +26,8 @@ O teste de integração usa os dois PDFs originais em `/workspace/attachments` q
 ## Limites da primeira versão
 
 - Leitura baseada no modelo NEOCOOLER dos PDFs fornecidos; outros layouts precisam de validação e adaptação.
-- PDFs de imagem precisam de OCR, ainda não implementado.
-- Até 30 arquivos por envio, 10 MB e 100 páginas por arquivo.
+- Prints PNG/JPG/WEBP são lidos por OCR; PDFs digitalizados ainda não são reconhecidos.
+- Até 30 arquivos por envio, 10 MB por arquivo, 100 páginas por PDF e 16 milhões de pixels por imagem.
 - Lotes salvos são persistidos em SQLite local; pedidos em conferência são mantidos temporariamente na mesma aba do navegador. Não há contas nem sincronização entre computadores.
 - PDFs são processados em memória; o histórico guarda apenas os dados conferidos dos pedidos, não os PDFs originais.
 - Versão para desenvolvimento, sem autenticação: use em ambiente confiável. Não expor diretamente na internet como serviço público.
@@ -85,3 +85,45 @@ Na página **Lotes salvos**:
 Pedidos presentes em vários lotes são somados em cada ocorrência, pois podem representar envios diferentes. O relatório avisa sobre números de pedido repetidos para permitir conferência. Cada lote selecionado entra apenas uma vez. Um lote excluído durante a seleção causa aviso para atualizar a lista, sem gerar um relatório incompleto.
 
 A data filtrada é a criação do lote, não a data de venda do PDF nem a última edição. Não há status de envio ou data de envio separada nesta versão. A seleção e o filtro desta consulta não são salvos ao sair da página.
+
+## Importar prints (PNG, JPG ou WEBP)
+
+O botão **Selecionar PDFs ou prints** aceita os dois tipos no mesmo envio. A leitura de imagens é local, sem serviço pago ou envio a um provedor de OCR. São aceitos os formatos dos exemplos:
+
+```text
+Barco
+2 branca p
+2 marinho p
+1 branca m
+```
+
+```text
+Neocooler
+todas azul
+p 6
+m 8
+g 10
+gg 12
+g1 4
+g2 4
+```
+
+**Azul** e **marinho** são normalizados para **Azul-marinho**. A linha “todas azul” aplica essa cor às quantidades por tamanho. A primeira linha de nome é uma sugestão de cliente e deve ser conferida. Horários e “Editada” não são quantidades. Outros formatos podem exigir correção.
+
+Após a leitura, confira todos os campos e marque **Conferi todos os dados deste print**. Informe um número de pedido manualmente se ele não aparecer na imagem (por exemplo, uma referência interna única). Em **Conferir ou corrigir o texto do print**, é possível corrigir o texto e clicar em **Interpretar texto corrigido**; isso exige nova conferência. Linhas não interpretadas geram aviso para evitar omissões silenciosas. OCR pode errar mesmo em itens que parecem completos; a conferência é obrigatória antes de salvar/exportar.
+
+### Instalação no Windows
+
+1. Instale o **Tesseract OCR**. A documentação do projeto indica os instaladores Windows da Universidade de Mannheim: https://tesseract-ocr.github.io/tessdoc/Installation.html e https://github.com/UB-Mannheim/tesseract/wiki . Use o instalador da arquitetura do seu Windows, mantendo o idioma inglês (`eng`).
+2. O caminho padrão `C:\Program Files\Tesseract-OCR\tesseract.exe` é detectado automaticamente. Para outro local, configure a variável `TESSERACT_CMD` com o caminho completo do executável antes de iniciar o aplicativo.
+3. Atualize `app.py`, **`ocr.py`**, `requirements.txt` e a pasta `static`. Preserve a pasta `data`.
+4. No terminal da pasta do aplicativo execute:
+
+```bat
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m uvicorn app:app --host 127.0.0.1 --port 8000
+```
+
+Depois pressione Ctrl+F5 no navegador. Se o Tesseract não estiver instalado, o app informa o problema ao importar imagens; PDFs com texto continuam funcionando. Em Linux, instale os pacotes `tesseract-ocr` e `tesseract-ocr-eng` pelo gerenciador do sistema.
+
+Limites: 30 arquivos por envio, 10 MB por arquivo e 16 milhões de pixels por imagem. Apenas prints com texto legível; não há suporte a escrita à mão ou OCR de PDFs digitalizados. O texto OCR é temporário na aba; o histórico guarda os pedidos conferidos, não as imagens originais.

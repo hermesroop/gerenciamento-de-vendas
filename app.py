@@ -14,12 +14,14 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pypdf import PdfReader
+from ocr import read_image, parse_order_text
+from starlette.concurrency import run_in_threadpool
 
 ROOT = Path(__file__).parent
 app = FastAPI(title='Neocooler - Gerenciamento de Produção Externa')
 app.mount('/static', StaticFiles(directory=ROOT / 'static'), name='static')
 SIZES = ['P', 'M', 'G', 'GG', 'G1', 'G2', 'G3']
-COLORS = {'AZUL MARINHO': 'Azul-marinho', 'AZUL ROYAL': 'Azul royal', 'VERDE': 'Verde', 'BRANCA': 'Branca', 'BRANCO': 'Branca', 'PRETA': 'Preta', 'PRETO': 'Preta', 'VERMELHA': 'Vermelha', 'VERMELHO': 'Vermelha', 'AMARELA': 'Amarela', 'AMARELO': 'Amarela', 'CINZA': 'Cinza', 'ROSA': 'Rosa', 'LARANJA': 'Laranja', 'AZUL': 'Azul', 'BEGE': 'Bege', 'ROXA': 'Roxa', 'ROXO': 'Roxa'}
+COLORS = {'AZUL MARINHO': 'Azul-marinho', 'AZUL ROYAL': 'Azul royal', 'VERDE': 'Verde', 'BRANCA': 'Branca', 'BRANCO': 'Branca', 'PRETA': 'Preta', 'PRETO': 'Preta', 'VERMELHA': 'Vermelha', 'VERMELHO': 'Vermelha', 'AMARELA': 'Amarela', 'AMARELO': 'Amarela', 'CINZA': 'Cinza', 'ROSA': 'Rosa', 'LARANJA': 'Laranja', 'AZUL': 'Azul-marinho', 'BEGE': 'Bege', 'ROXA': 'Roxa', 'ROXO': 'Roxa'}
 
 def parse_pdf(data: bytes, filename: str):
     reader = PdfReader(BytesIO(data))
@@ -64,7 +66,7 @@ def history_page():
 @app.post('/api/parse')
 async def parse(files: list[UploadFile] = File(...)):
     if len(files) > 30:
-        raise HTTPException(400, 'Envie até 30 PDFs por vez.')
+        raise HTTPException(400, 'Envie até 30 arquivos por vez.')
     results = []
     for file in files:
         data = await file.read(10 * 1024 * 1024 + 1)
@@ -72,11 +74,12 @@ async def parse(files: list[UploadFile] = File(...)):
             results.append(dict(filename=file.filename, error='Arquivo excede 10 MB.'))
             continue
         try:
-            if not data.startswith(b'%PDF-'):
-                raise ValueError('Arquivo não é um PDF válido.')
-            results.append(parse_pdf(data, file.filename or 'Pedido.pdf'))
+            if data.startswith(b'%PDF-'):
+                results.append(await run_in_threadpool(parse_pdf, data, file.filename or 'Pedido.pdf'))
+            else:
+                results.append(await run_in_threadpool(read_image, data, file.filename or 'Print.png'))
         except Exception as exc:
-            message = str(exc) if isinstance(exc, ValueError) else 'Não foi possível ler o PDF. Verifique se está protegido ou danificado.'
+            message = str(exc) if isinstance(exc, ValueError) else 'Não foi possível ler o arquivo. Verifique se está protegido, danificado ou em formato não aceito.'
             results.append(dict(filename=file.filename, error=message))
     return results
 
@@ -206,3 +209,13 @@ def summarize_batches(request: BatchSummaryRequest):
                 end_date=request.end_date, batches=batches, batch_count=len(batches),
                 order_count=sum(len(b['orders']) for b in batches),
                 quantity=sum(i['quantity'] for b in batches for o in b['orders'] for i in o['items']))
+
+
+class ImageTextRequest(BaseModel):
+    text: str = Field(max_length=30000)
+    filename: str = Field(default='Print', max_length=500)
+
+
+@app.post('/api/parse-image-text')
+def parse_image_text(request: ImageTextRequest):
+    return parse_order_text(request.text, request.filename)
