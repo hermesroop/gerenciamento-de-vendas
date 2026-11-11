@@ -135,3 +135,21 @@ Na tela inicial, importe PDFs/prints e confira os pedidos normalmente (incluindo
 Na janela **Editar lote**, use **Adicionar pedido** para preencher manualmente o número, cliente e itens. **Adicionar camiseta** e **Remover item** permitem ajustar as linhas. **Excluir pedido** retira o pedido da edição após confirmação. O resumo da edição acompanha as quantidades. Essas alterações só entram no histórico ao clicar em **Salvar alterações**; cancelar descarta todas. É necessário manter pelo menos um pedido e uma camiseta por pedido. Para remover um lote inteiro, use **Excluir lote**.
 
 A inclusão preserva nome e data original do lote e atualiza a data de última edição. O filtro de datas continua considerando a criação do lote, não a data em que os novos pedidos foram acrescentados. O limite é de 500 pedidos por lote.
+
+## Conferência, pedidos manuais e texto
+
+Os pedidos da tela inicial aparecem em modo de consulta. Ao lado de **Remover**, **Editar** abre os campos e os botões **Adicionar Item** e **Remover Item**. **Concluir edição** aplica os dados ao resumo; **Cancelar edição** descarta as alterações daquele pedido. Enquanto algum pedido está em edição, o salvamento, a inclusão em outro lote e a exportação ficam bloqueados. Cada pedido precisa de número, cliente e ao menos um item válido para concluir.
+
+- **Adicionar Pedido** cria um pedido manual em edição, com uma linha inicial. Preencha os campos e clique em **Concluir edição**.
+- **Adicionar via Texto** abre a caixa para colar/digitar o cliente, o número e os itens, uma informação por linha. **Interpretar Texto** transforma o texto em um pedido para conferência. Exemplo:
+
+```text
+Barco
+Pedido 123
+2 branca p
+2 marinho g
+```
+
+Também é aceito “todas azul” seguido das linhas “p 6”, “m 8”, etc. Texto digitado não exige Tesseract. Confira a interpretação e marque **Conferi todos os dados deste pedido**. Se faltar informação ou houver item não interpretado, use **Editar**; o texto original pode ser corrigido e reinterpretado dentro da edição. O botão **Cancelar** da caixa de novo texto mantém o conteúdo digitado até sair da página.
+
+Os nomes **Adicionar Item** e **Remover Item** são usados tanto na conferência inicial como em **Editar lote**. Nesta atualização, substitua toda a pasta `static`, reinicie o aplicativo e pressione Ctrl+F5. Preserve `data` e os demais arquivos do servidor.
