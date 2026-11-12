@@ -153,3 +153,11 @@ Pedido 123
 Também é aceito “todas azul” seguido das linhas “p 6”, “m 8”, etc. Texto digitado não exige Tesseract. Confira a interpretação e marque **Conferi todos os dados deste pedido**. Se faltar informação ou houver item não interpretado, use **Editar**; o texto original pode ser corrigido e reinterpretado dentro da edição. O botão **Cancelar** da caixa de novo texto mantém o conteúdo digitado até sair da página.
 
 Os nomes **Adicionar Item** e **Remover Item** são usados tanto na conferência inicial como em **Editar lote**. Nesta atualização, substitua toda a pasta `static`, reinicie o aplicativo e pressione Ctrl+F5. Preserve `data` e os demais arquivos do servidor.
+
+## Avisos e confirmações
+
+As ações de salvar, acrescentar pedidos, excluir e descartar alterações usam janelas internas com **Confirmar** e **Cancelar**, seguindo o visual do aplicativo. Esc cancela a confirmação; o foco inicial fica em Cancelar. Essas janelas também funcionam sobre a janela de detalhes do lote. Não são usados `alert`, `confirm` ou `prompt` nativos do navegador.
+
+Mensagens de resultado e de validação continuam próximas aos controles e também aparecem como avisos dispensáveis, que somem após 10 segundos. O botão **Fechar aviso** permite removê-los antes. Esses avisos não bloqueiam a tela e não aparecem na impressão.
+
+Para atualizar esta versão, substitua toda a pasta `static` e pressione Ctrl+F5 no navegador. Não há novas dependências nem alterações no banco de dados.
